@@ -1,9 +1,13 @@
 {
-	"name": "lenovoTurns",
+	"name": "lenovo-turns-react-native",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
 		"start": "node node_modules/react-native/local-cli/cli.js start",
+		"bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle  --assets-dest android/app/src/main/res/",
+		"build": "npm run bundle && react-native run-android",
+		"install": "cd android && ./gradlew installDebug",
+		"dependencies": "cd android && ./gradlew app:dependencies",
 		"test": "jest"
 	},
 	"dependencies": {

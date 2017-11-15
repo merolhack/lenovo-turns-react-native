@@ -7,6 +7,9 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 // We Import our Stylesheet
 import GeneralStyle from "./js/GeneralStyle";
 
+/*           <ImageBackground style={{width:100}} source={{uri: require('./assets/bg-main-grid.png')}}>
+          </ImageBackground> */
+
 class App extends Component {
   state = {
     counterG1: 0,
@@ -64,7 +67,7 @@ class App extends Component {
 
   render() {
     return (
-      <Grid>
+      <Grid style={{ backgroundColor: '#FF0000' }}>
         <Row style={{marginTop: 22, marginBottom: 22, height: 40}}>
           <Col>
             <Text style={styles.h1}>Tome su turno</Text>
@@ -82,7 +85,7 @@ class App extends Component {
             </Row>
           </Col>
         </Row>
-        <Row>
+        <Row style={{marginTop: 22, marginBottom: 22}}>
           <Col>
             <Row style={styles.row}>
               <Button onPress={() => {
@@ -160,7 +163,6 @@ const styles = StyleSheet.create({
     marginLeft: 22
   },
   btn: {
-    width: '100%',
   }
 });
 
