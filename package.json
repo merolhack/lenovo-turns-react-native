@@ -1,28 +1,30 @@
 {
-	"name": "lenovo-turns-react-native",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"start": "node node_modules/react-native/local-cli/cli.js start",
-		"bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle  --assets-dest android/app/src/main/res/",
-		"build": "npm run bundle && react-native run-android",
-		"install": "cd android && ./gradlew installDebug",
-		"dependencies": "cd android && ./gradlew app:dependencies",
-		"test": "jest"
-	},
-	"dependencies": {
-		"react": "16.0.0",
-		"react-native": "0.50.3",
-		"react-native-easy-grid": "^0.1.15",
-		"socket.io-client": "^2.0.4"
-	},
-	"devDependencies": {
-		"babel-jest": "21.2.0",
-		"babel-preset-react-native": "4.0.0",
-		"jest": "21.2.1",
-		"react-test-renderer": "16.0.0"
-	},
-	"jest": {
-		"preset": "react-native"
-	}
+  "name": "lenovo-turns-react-native",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "index": "curl 'http://localhost:8081/index.js?platform=android' -o 'android/app/src/main/assets/index.android.bundle'",
+    "bundle": "npm run index && react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle  --assets-dest android/app/src/main/res/",
+    "build": "npm run bundle && react-native run-android",
+    "install": "cd android && ./gradlew installDebug",
+    "dependencies": "cd android && ./gradlew app:dependencies",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "16.0.0",
+    "react-native": "0.50.3",
+    "react-native-easy-grid": "^0.1.15",
+    "socket.io-client": "^2.0.4"
+  },
+  "devDependencies": {
+    "babel-jest": "21.2.0",
+    "babel-preset-react-native": "4.0.0",
+    "jest": "21.2.1",
+    "lodash": "^4.17.4",
+    "react-test-renderer": "16.0.0"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
 }

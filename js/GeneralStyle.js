@@ -1,9 +1,9 @@
-import React from "react-native";
-import Dimensions from 'Dimensions';
+import { Dimensions } from "react-native";
 
 // Precalculate Device Dimensions for better performance
-const x = Dimensions.get('window').width;
-const y = Dimensions.get('window').height;
+const window = Dimensions.get('window');
+const x = window.width;
+const y = window.height;
 
 // Calculating ratio from iPhone breakpoints
 const ratioX = x < 375 ? (x < 320 ? 0.75 : 0.875) : 1 ;
@@ -30,6 +30,12 @@ export default Style = {
   RATIO_Y: ratioY,
   UNIT: em(1),
   PADDING: em(1.25),
+
+  // IMAGE
+  bgImage: {
+    height: window.height,
+    width: window.width
+  },
 
   // CARD
   CARD_WIDTH: x - em(1.25) * 2,

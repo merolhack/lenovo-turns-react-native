@@ -1,21 +1,26 @@
 import React, { Component } from 'react';
-import { Alert, StyleSheet, Text, View, Button, CheckBox } from 'react-native';
+import { ImageBackground, Alert, StyleSheet, Text, View, TouchableHighlight, TouchableOpacity, Image } from 'react-native';
 // External dependencies
+import _ from 'lodash';
 import SocketIOClient from 'socket.io-client';
 import { Col, Row, Grid } from "react-native-easy-grid";
 
 // We Import our Stylesheet
 import GeneralStyle from "./js/GeneralStyle";
 
-/*           <ImageBackground style={{width:100}} source={{uri: require('./assets/bg-main-grid.png')}}>
-          </ImageBackground> */
+// Websocket
+const ip = '192.168.1.64';
+const port = 80;
 
 class App extends Component {
   state = {
     counterG1: 0,
     counterG2: 0,
     disabled: false,
+    buttons: [],
   }
+
+  buttons = [];
 
   constructor(props) {
     super(props);
@@ -23,11 +28,15 @@ class App extends Component {
     const options = {
       path: '/turns',
     };
-    this.socket = SocketIOClient('http://192.168.1.64:8000', options);
+    this.socket = SocketIOClient(`http://${ip}:${port}`, options);
     // Subscribe to the events
     this.socket.on('turn-created', (payload) => {
-      console.log('The turn has created!', JSON.stringify(payload));
-      this._setAlertVisible({payload});
+      this._setAlertVisible(payload);
+    });
+    // Get the buttons
+    this.socket.emit('get-buttons', {});
+    this.socket.on('set-buttons', (payload) => {
+      this.setState({buttons: payload});
     });
     // TODO
     console.ignoredYellowBox = ['Setting a timer'];
@@ -40,10 +49,10 @@ class App extends Component {
    * @param {string} stateName
    * @param {string} counter
    */
-  _setAlertVisible = (groupName, stateName, counter) => {
+  _setAlertVisible = (payload) => {
     Alert.alert(
       'Turno',
-      `Se ha impreso su turno #${groupName} - ${counter}`,
+      `Se ha impreso su turno #${payload.groupName}${payload.counter}`,
       [
         {text: 'Aceptar', onPress: () => console.log('OK Pressed')},
       ],
@@ -52,7 +61,7 @@ class App extends Component {
   }
 
   /**
-   * Change the state of the checkbox
+   * Change the state of the button
    */
   _setDisabled = () => {
     this.setState({disabled: !this.state.disabled});
@@ -61,85 +70,95 @@ class App extends Component {
   /**
    * Emit to the WebSocket server
    */
-  _postCreateTurn = (groupName, stateName) => {
-    this.socket.emit('create-turn', {groupName, stateName});
+  _postCreateTurn = (group, stateName) => {
+    this.socket.emit('create-turn', {groupName: this._getButtonGroup(group), stateName});
+  }
+
+  _getButtonTitle(order) {
+    const button = _.find(this.state.buttons, function(o) { return o.order == order; });
+    if (!_.isUndefined(button)) {
+      return button.title;
+    }
+    return '';
+  }
+
+  _getButtonGroup(order) {
+    const button = _.find(this.state.buttons, function(o) { return o.order == order; });
+    if (!_.isUndefined(button)) {
+      return button.group;
+    }
+    return '';
   }
 
   render() {
     return (
-      <Grid style={{ backgroundColor: '#FF0000' }}>
-        <Row style={{marginTop: 22, marginBottom: 22, height: 40}}>
-          <Col>
-            <Text style={styles.h1}>Tome su turno</Text>
-          </Col>
-          <Col>
-            <Row>
-              <Col style={{ width: 35 }}>
-                <CheckBox
-                  onValueChange={this._setDisabled}
-                  value={this.state.disabled} />
-              </Col>
-              <Col>
-                <Text style={{ marginTop: 5 }}>Discapacitado</Text>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-        <Row style={{marginTop: 22, marginBottom: 22}}>
-          <Col>
-            <Row style={styles.row}>
-              <Button onPress={() => {
-                  this._postCreateTurn('G1', 'counterG1')
-                }}
-                title="Moto A" />
-            </Row>
-          </Col>
-          <Col>
-            <Row style={styles.row}>
-              <Button style={styles.btn} onPress={() => {
-                  this._postCreateTurn('G2','counterG2')
-                }}
-                title="Moto B" />
-            </Row>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Row style={styles.row}>
-              <Button onPress={() => {
-                  this._postCreateTurn('G1', 'counterG1')
-                }}
-                title="Moto C" />
-            </Row>
-          </Col>
-          <Col>
-            <Row style={styles.row}>
-              <Button onPress={() => {
-                  this._postCreateTurn('G2','counterG2')
-                }}
-                title="Moto D" />
-            </Row>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Row style={styles.row}>
-              <Button onPress={() => {
-                  this._postCreateTurn('G1', 'counterG1')
-                }}
-                title="Moto E" />
-            </Row>
-          </Col>
-          <Col>
-            <Row style={styles.row}>
-              <Button onPress={() => {
-                  this._postCreateTurn('G2','counterG2')
-                }}
-                title="Moto F" />
-            </Row>
-          </Col>
-        </Row>
-      </Grid>
+      <ImageBackground source={require('./assets/bg-main-grid.png')} style={GeneralStyle.bgImage} >
+        <Grid>
+          <Row size={20}>
+            <Col size={35}>
+              <Image source={require('./assets/logo-motorola.png')} style={{ flex: 1, width: undefined, height: undefined, marginLeft: 10 }} resizeMode="contain" />
+            </Col>
+            <Col size={65}></Col>
+          </Row>
+          <Row size={20}>
+            <Col size={30}></Col>
+            <Col size={40}>
+              <Image source={require('./assets/btn-takeyourturn.png')} style={{ flex: 1, width: undefined, height: undefined, marginLeft: 0 }} resizeMode="contain" />
+            </Col>
+            <Col size={30}></Col>
+          </Row>
+          <Row size={60}>
+            <Col size={5}></Col>
+            <Col size={30}>
+              <Row size={50}>
+                <Col size={45}>
+                  <TouchableOpacity onPress={() => this._postCreateTurn(0, 'counterG1')}>
+                    <Image source={require('./assets/btn-yellow.png')} />
+                  </TouchableOpacity>
+                </Col>
+                <Col size={55}>
+                  <Text style={styles.title}>{ this._getButtonTitle(0) }</Text>
+                </Col>
+              </Row>
+              <Row size={50}>
+                <Col size={45}>
+                  <TouchableOpacity onPress={() => this._postCreateTurn(1, 'counterG2')}>
+                    <Image source={require('./assets/btn-blue.png')} />
+                  </TouchableOpacity>
+                </Col>
+                <Col size={55}>
+                  <Text style={styles.title}>{ this._getButtonTitle(1) }</Text>
+                </Col>
+              </Row>
+            </Col>
+            <Col size={15}></Col>
+            <Col size={10}></Col>
+            <Col size={35}>
+              <Row size={50}>
+                <Col size={45}>
+                  <TouchableOpacity onPress={() => this._postCreateTurn(2, 'counterG1')}>
+                    <Image source={require('./assets/btn-red.png')} />
+                  </TouchableOpacity>
+                </Col>
+                <Col size={55}>
+                  <Text style={styles.title}>{ this._getButtonTitle(2) }</Text>
+                </Col>
+              </Row>
+              <Row size={50}>
+                <Col size={45}>
+                  <TouchableOpacity onPress={() => this._postCreateTurn(3, 'counterG2')}>
+                    <Image source={require('./assets/btn-pink.png')} />
+                  </TouchableOpacity>
+                </Col>
+                <Col size={55}>
+                  <Text style={styles.title}>{ this._getButtonTitle(3) }</Text>
+                </Col>
+              </Row>
+            </Col>
+            <Col size={5}></Col>
+          </Row>
+        </Grid>
+      </ImageBackground>
     );
   }
 }
@@ -151,18 +170,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  h1: {
-    fontSize: GeneralStyle.FONT_SIZE_TITLE,
-    lineHeight: GeneralStyle.FONT_SIZE_TITLE * 1.5,
-    textAlign: 'center',
-  },
   row: {
     marginTop: 22,
     marginRight: 22,
     marginBottom: 22,
     marginLeft: 22
   },
-  btn: {
+  title: {
+    fontSize: 30,
+    color: 'white'
   }
 });
 
