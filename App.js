@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ImageBackground, Alert, StyleSheet, Text, View, TouchableHighlight, TouchableOpacity, Image } from 'react-native';
+import { ImageBackground, Alert, StyleSheet, Text, View, Modal, TouchableOpacity, Image, FormLabel, TextInput, Button } from 'react-native';
 // External dependencies
 import _ from 'lodash';
 import SocketIOClient from 'socket.io-client';
@@ -14,6 +14,8 @@ const port = 80;
 
 class App extends Component {
   state = {
+    modalVisible: false,
+    ip,
     counterG1: 0,
     counterG2: 0,
     disabled: false,
@@ -24,11 +26,20 @@ class App extends Component {
 
   constructor(props) {
     super(props);
+    // Open Modal
+    setTimeout(() => {
+      this._setModalVisible(true);
+    }, 2000);
+    // TODO
+    console.ignoredYellowBox = ['Setting a timer'];
+  }
+
+  _connectToWebSocket() {
     // Creating the socket-client instance will automatically connect to the server.
     const options = {
       path: '/turns',
     };
-    this.socket = SocketIOClient(`http://${ip}:${port}`, options);
+    this.socket = SocketIOClient(`http://${this.state.ip}:${port}`, options);
     // Subscribe to the events
     this.socket.on('turn-created', (payload) => {
       this._setAlertVisible(payload);
@@ -38,16 +49,21 @@ class App extends Component {
     this.socket.on('set-buttons', (payload) => {
       this.setState({buttons: payload});
     });
-    // TODO
-    console.ignoredYellowBox = ['Setting a timer'];
+  }
+
+  /**
+   * Shows the modal component
+   * 
+   * @param {Boolean} visible
+   */
+  _setModalVisible(visible) {
+    this.setState({modalVisible: visible});
   }
 
   /**
    * Shows the alert component
    * 
-   * @param {string} groupName
-   * @param {string} stateName
-   * @param {string} counter
+   * @param {object} payload
    */
   _setAlertVisible = (payload) => {
     Alert.alert(
@@ -92,7 +108,30 @@ class App extends Component {
 
   render() {
     return (
-      <ImageBackground source={require('./assets/bg-main-grid.png')} style={GeneralStyle.bgImage} >
+      <ImageBackground source={require('./assets/bg-main-grid.png')} style={GeneralStyle.bgImage}>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={this.state.modalVisible}
+          onRequestClose={() => { this._connectToWebSocket()}}
+          >
+         <View style={{marginTop: 22}}>
+          <View>
+            <Text>Ingresa la IP del Panel de Control</Text>
+            <TextInput
+              style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+              onChangeText={(ip) => this.setState({ip})}
+              value={this.state.ip}
+            />
+            <Button
+              onPress={() => {this._setModalVisible(false); this._connectToWebSocket();}}
+              title="Guardar"
+              color="#841584"
+              accessibilityLabel="Guardar"
+            />
+          </View>
+         </View>
+        </Modal>
         <Grid>
           <Row size={20}>
             <Col size={35}>
